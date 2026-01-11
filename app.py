@@ -5,58 +5,20 @@ from openai import OpenAI
 
 # Page Config
 st.set_page_config(page_title="Sentinal AI", page_icon="🛡️", layout="wide")
-# --- SIMPLE PASSWORD PROTECTION ---
-def check_password():
-    """Returns `True` if the user had the correct password."""
 
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if st.session_state["password"] == "sentinal2026": # <--- CHANGE THIS PASSWORD
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # don't store password
-        else:
-            st.session_state["password_correct"] = False
+try:
+    api_key = st.secrets["OPENAI_API_KEY"]
+except:
+    # If running locally without st.secrets, look for .env or env var
+    from dotenv import load_dotenv
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
 
-    if "password_correct" not in st.session_state:
-        # First run, show input for password.
-        st.text_input(
-            "Enter Beta Access Code", type="password", on_change=password_entered, key="password"
-        )
-        return False
-    elif not st.session_state["password_correct"]:
-        # Password incorrect, show input again.
-        st.text_input(
-            "Enter Beta Access Code", type="password", on_change=password_entered, key="password"
-        )
-        st.error("😕 Access Code incorrect")
-        return False
-    else:
-        # Password correct.
-        return True
+if not api_key:
+    st.error("⚠️ OpenAI API Key missing. Please add it to Streamlit Secrets.")
+    st.stop()
 
-if check_password():
-    # ... THE REST OF YOUR APP CODE GOES HERE (Indent everything below this line!) ...
-    
-    # Example of indentation:
-    # with st.sidebar:
-    #    st.title("🛡️ Sentinal")
-
-# --- THE SETUP ---
-# On Streamlit Cloud, we get the key from st.secrets
-# On Local machine, we try to load it from environment
-    try:
-        api_key = st.secrets["OPENAI_API_KEY"]
-    except:
-        # If running locally without st.secrets, look for .env or env var
-        from dotenv import load_dotenv
-        load_dotenv()
-        api_key = os.getenv("OPENAI_API_KEY")
-
-    if not api_key:
-        st.error("⚠️ OpenAI API Key missing. Please add it to Streamlit Secrets.")
-        st.stop()
-
-    client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=api_key)
 
 # --- THE BRAIN (Formerly backend.py) ---
 SYSTEM_PROMPT = """
